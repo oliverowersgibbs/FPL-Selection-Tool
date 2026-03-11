@@ -207,8 +207,13 @@ def main():
     fig, ax = plt.subplots(figsize=(10, 4))
     top = df_display.head(20)
     ax.bar(range(len(top)), top["Score"], color="royalblue")
-    ax.set_xticks(range(len(top)))
-    ax.set_xticklabels(top["Name"], rotation=45, ha="right")
+# Shorten long names to avoid recursion errors
+short_names = top["Name"].apply(lambda x: x if len(x) <= 12 else x[:10] + "…")
+
+ax.set_xticks(range(len(top)))
+ax.set_xticklabels(short_names, rotation=45, ha="right")
+
+
     ax.set_ylabel("Score")
     ax.set_title(f"Top Score – GW {gw}")
     st.pyplot(fig)
@@ -241,5 +246,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
