@@ -2,9 +2,7 @@ import requests
 import pandas as pd
 import numpy as np
 import streamlit as st
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+import plotly.express as px
 
 BASE_URL = "https://fantasy.premierleague.com/api"
 
@@ -166,7 +164,6 @@ def main():
     if pos_filter != "ALL":
         df = df[df["pos"] == pos_filter]
 
-    df = df.copy()
     df_display = df.sort_values("attractiveness", ascending=False).head(30)
 
     st.subheader(f"Top picks – GW {gw}")
@@ -202,23 +199,27 @@ def main():
         height=500
     )
 
-    # Bar chart
+    # Plotly bar chart (no recursion errors)
     st.subheader("Score bar chart")
-    fig, ax = plt.subplots(figsize=(10, 4))
     top = df_display.head(20)
-    ax.bar(range(len(top)), top["Score"], color="royalblue")
-
     short_names = top["Name"].apply(lambda x: x if len(x) <= 12 else x[:10] + "…")
 
-    ax.set_xticks(range(len(top)))
-    ax.set_xticklabels(short_names, rotation=45, ha="right")
+    fig = px.bar(
+        x=short_names,
+        y=top["Score"],
+        labels={"x": "Player", "y": "Score"},
+        title=f"Top Score – GW {gw}",
+    )
 
+    fig.update_layout(
+        xaxis_tickangle=-45,
+        height=400,
+        margin=dict(l=20, r=20, t=40, b=80)
+    )
 
-    ax.set_ylabel("Score")
-    ax.set_title(f"Top Score – GW {gw}")
-    st.pyplot(fig)
+    st.plotly_chart(fig, use_container_width=True)
 
-    # Simple "why this player" inspector
+    # Player breakdown
     st.subheader("Player breakdown")
     selected_name = st.selectbox("Select player", top["Name"].tolist())
     row = df[df["web_name"] == selected_name].iloc[0]
@@ -246,7 +247,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
